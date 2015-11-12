@@ -1,0 +1,102 @@
+<!doctype html>
+<html ng-app="gamePanel">
+<head>
+    <!-- META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+    <title>Gameathon Status Panel</title>
+
+    <!-- SCROLLS -->
+    <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css"><!-- load bootstrap -->
+    <style>
+        html                    { overflow-y:scroll; }
+        body                    { padding-top:50px; }
+        #todo-list              { margin-bottom:30px; }
+        #game-form              { margin-bottom:30px; }
+    </style>
+
+    <!-- SPELLS -->
+    <script src="./bower_components/jquery/dist/jquery.min.js"></script><!-- load jquery -->
+    <script src="./bower_components/angular/angular.min.js"></script><!-- load angular -->
+    <script src="http://localhost/socket.io/socket.io.js"></script>
+    <script src="./bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="./ng-app.js"></script>
+
+</head>
+<!-- SET THE CONTROLLER AND GET ALL Games -->
+<body ng-controller="mainController">
+    <div class="container">
+
+        <!-- HEADER AND TODO COUNT -->
+        <div class="jumbotron text-center">
+            <h1>We have <span class="label label-info">{{ games.length }}</span> games!</h1>
+            <br />
+            <p class="lead">Here's a list of game servers active right now. You can add and remove your own games to this list if you are hosting one of your own servers, just be sure to tidy up here once you shut your server down!</p>
+        <p class="lead">If you're playing an online game, feel free to throw it on here too, that way people will know they can join in online!</p>
+        </div>
+        
+
+        <!-- TODO LIST -->
+        <div id="game-list" class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOOP OVER THE GAMES IN $scope.games -->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Game</th>
+                            <th>IP Address</th>
+                            <th>Port</th>
+                            <th class="text-center">Server Status</th>
+                            <th class="text-center">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-repeat="game in games">
+                        <tr>
+                            <th scope="row">{{ game.name }}</th>
+                            <td>{{ game.ip }}</td>
+                            <td>{{ game.port }}</td>
+                            <td class="text-center">
+                                <span ng-show="{{game.ip == null}}" class="label label-warning">No IP Given</span>
+                                <span ng-show="{{!game.status && game.ip != null}}" class="label label-danger">Offline</span>
+                                <span ng-show="{{game.status}}" class="label label-success">Active</span>
+                            </td>
+                            <td class="text-center"><button type="button" class="btn btn-xs btn-danger" ng-show="game.user" ng-click="deleteGame(game._id)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- FORM TO CREATE GAME -->
+        <div id="game-form" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <form name="gameForm">
+                    <div class="form-inline">
+
+                        <!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+                        <div class="form-group" ng-class="{'has-error': !gameForm.name.$valid, 'has-success':gameForm.name.$valid}">
+                            <input type="text" name="name" class="form-control input text-center" placeholder="Game name" ng-model="formData.name" required="string" ng-required="true">
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': !gameForm.ip.$valid, 'has-success':gameForm.ip.$valid}">
+                            <input type="text" name="ip" class="form-control input text-center" placeholder="IP Address" ng-model="formData.ip" ng-pattern="/(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/">
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': !gameForm.port.$valid, 'has-success':gameForm.port.$valid}">
+                            <input type="number" name="port" class="form-control input text-center" placeholder="Port" ng-model="formData.port" ng-pattern="/(^[0-9]$)|(^[0-9][0-9]$)|(^[0-9][0-9][0-9]$)|(^[0-9][0-9][0-9][0-9]$)|((^[0-5][0-9][0-9][0-9][0-9]$)|(^6[0-4][0-9][0-9][0-9]$)|(^65[0-4][0-9][0-9]$)|(^655[0-2][0-9]$)|(^6553[0-5]$))/">
+                        </div>
+                        <div class="form-group">
+                        <!-- createGame() WILL CREATE NEW GAMES -->
+                            <button type="submit" ng-if="!gameForm.$valid" disabled class="btn btn-primary btn" ng-click="createGame()">Add</button>
+                            <button type="submit" ng-if="gameForm.$valid" class="btn btn-primary btn" ng-click="createGame()">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
